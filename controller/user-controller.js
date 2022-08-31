@@ -1,21 +1,47 @@
-import { ormCreateUser as _createUser } from '../model/user-orm.js'
+import { auth } from "../config/config.js"
+import {
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword
+} from "firebase/auth"
 
 export async function createUser(req, res) {
-    try {
-        const { username, password } = req.body;
-        if (username && password) {
-            const resp = await _createUser(username, password);
-            console.log(resp);
-            if (resp.err) {
-                return res.status(400).json({message: 'Could not create a new user!'});
-            } else {
-                console.log(`Created new user ${username} successfully!`)
-                return res.status(201).json({message: `Created new user ${username} successfully!`});
-            }
-        } else {
-            return res.status(400).json({message: 'Username and/or Password are missing!'});
-        }
-    } catch (err) {
-        return res.status(500).json({message: 'Database failure when creating new user!'})
-    }
+	try {
+		const { email, password } = req.body
+		if (email && password) {
+			await createUserWithEmailAndPassword(auth, email, password)
+			return res.status(201).json({
+				message: "Created new user successfully!"
+			})
+		} else {
+			return res.status(400).json({
+				message: "Email and/or Password are missing!"
+			})
+		}
+	} catch (error) {
+		return res.status(400).json({
+			code: error.code,
+			message: error.message
+		})
+	}
+}
+
+export async function loginUser(req, res) {
+	try {
+		const { email, password } = req.body
+		if (email && password) {
+			await signInWithEmailAndPassword(auth, email, password)
+			return res.status(201).json({
+				message: "Login successfully!"
+			})
+		} else {
+			return res.status(400).json({
+				message: "Email and/or Password are missing!"
+			})
+		}
+	} catch (error) {
+		return res.status(400).json({
+			code: error.code,
+			message: error.message
+		})
+	}
 }
